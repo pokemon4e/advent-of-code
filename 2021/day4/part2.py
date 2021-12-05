@@ -1,13 +1,13 @@
-from os import umask
+from collections import defaultdict
 import functools
 import operator
 
 class matrix:
-    def __init__(self, index) -> None:
+    def __init__(self, index: int) -> None:
         self.__index = index
         self.__positions = []
-        self.__marked_total_row = {}
-        self.__marked_total_col = {}
+        self.__marked_total_row = defaultdict(int)
+        self.__marked_total_col = defaultdict(int)
         self.__unmarked_total = 0
         
     @property
@@ -22,7 +22,7 @@ class matrix:
     def unmarked_total(self) -> int:
         return self.__unmarked_total
 
-    def add_number(self, number, row, col) -> None:
+    def add_number(self, number: int, row: int, col: int) -> None:
         self.__unmarked_total += number
         self.__positions.append(position(self, number, row, col))
 
@@ -30,12 +30,12 @@ class matrix:
         self.__unmarked_total -= position.number
         row = position.row
         col = position.col
-        self.__marked_total_row[row] = self.__marked_total_row.get(row, 0) + 1
-        self.__marked_total_col[col] = self.__marked_total_col.get(col, 0) + 1
+        self.__marked_total_row[row] += 1
+        self.__marked_total_col[col] += 1
         return self.__marked_total_row[row] >= 5 or self.__marked_total_col[col] >= 5
 
 class position:    
-    def __init__(self, matrix, number, row, col) -> None:
+    def __init__(self, matrix: matrix, number: int, row: int, col: int) -> None:
         self.__matrix = matrix
         self.__number = number
         self.__row = row
@@ -61,14 +61,10 @@ class position:
 def solution(bingo_numbers, matrix_list):
     positions = [m.positions for m in matrix_list]
     flat_positions = functools.reduce(operator.iconcat, positions, [])
-    position_list_by_number = {}
+    position_list_by_number = defaultdict(list)
     
-    for position in flat_positions:
-        number = position.number
-        if number not in position_list_by_number:
-            position_list_by_number[number] = []
-        
-        position_list_by_number[number].append(position)
+    for position in flat_positions:        
+        position_list_by_number[position.number].append(position)
     
     win_matrix_indexes = set()
     for number in bingo_numbers:
